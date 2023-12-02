@@ -10,10 +10,12 @@ static RE_BLUE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d+) blue").unwrap());
 
 fn get_num(re: &Regex, s: &str) -> Result<u32> {
     re.captures(s)
-        .map_or(Some(0), |cap| {
-            cap.get(1).and_then(|d| d.as_str().parse().ok())
+        .context("Regex did not match")
+        .and_then(|cap| {
+            cap.get(1)
+                .context("Regex does not have at least 1 capture group")
+                .and_then(|d| d.as_str().parse().context("Failed to parse int"))
         })
-        .with_context(|| format!("Failed to read num: {s}"))
 }
 
 #[derive(Default)]
@@ -55,9 +57,12 @@ impl FromStr for Game {
         let shown = shown_part
             .split("; ")
             .map(|shown_round| {
-                let red = get_num(&RE_RED, shown_round)?;
-                let green = get_num(&RE_GREEN, shown_round)?;
-                let blue = get_num(&RE_BLUE, shown_round)?;
+                let red = get_num(&RE_RED, shown_round)
+                    .with_context(|| format!("Failed to get red for {shown_round}"))?;
+                let green = get_num(&RE_GREEN, shown_round)
+                    .with_context(|| format!("Failed to get green for {shown_round}"))?;
+                let blue = get_num(&RE_BLUE, shown_round)
+                    .with_context(|| format!("Failed to get blue for {shown_round}"))?;
 
                 Ok(Rgb { red, green, blue })
             })
