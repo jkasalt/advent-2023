@@ -8,12 +8,12 @@ fn p1(input: &str) -> u32 {
                 .chars()
                 .find(|c| c.is_numeric())
                 .and_then(|c| c.to_digit(10))
-                .unwrap();
+                .unwrap_or(0);
             let last = l
                 .chars()
                 .rfind(|c| c.is_numeric())
                 .and_then(|c| c.to_digit(10))
-                .unwrap();
+                .unwrap_or(0);
             first * 10 + last
         })
         .sum()
