@@ -9,13 +9,13 @@ static RE_GREEN: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d+) green").unwrap())
 static RE_BLUE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\d+) blue").unwrap());
 
 fn get_num(re: &Regex, s: &str) -> Result<u32> {
-    re.captures(s)
-        .context("Regex did not match")
-        .and_then(|cap| {
-            cap.get(1)
-                .context("Regex does not have at least 1 capture group")
-                .and_then(|d| d.as_str().parse().context("Failed to parse int"))
-        })
+    if let Some(cap) = re.captures(s) {
+        cap.get(1)
+            .context("Regex does not have at least 1 capture group")
+            .and_then(|d| d.as_str().parse().context("Failed to parse int"))
+    } else {
+        Ok(0)
+    }
 }
 
 #[derive(Default)]
