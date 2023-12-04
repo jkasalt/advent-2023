@@ -1,6 +1,6 @@
 use advent2023::matrix::Matrix;
-use std::fmt;
 use std::time::Instant;
+use std::{fmt, fs};
 
 #[derive(PartialEq, Eq)]
 enum Cell {
@@ -115,8 +115,9 @@ fn p2(matrix: &Matrix<Cell>) -> u32 {
 }
 
 fn main() {
+    let input = fs::read_to_string("input/3.txt").expect("input file should be there");
     let start0 = Instant::now();
-    let input = parse(include_str!("../../input/3.txt"));
+    let input = parse(&input);
     let end0 = Instant::now();
     println!("input parsed in {:?}", end0.duration_since(start0));
 

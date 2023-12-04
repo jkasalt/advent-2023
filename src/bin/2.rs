@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::fs;
 use std::str::FromStr;
 use std::time::Instant;
 
@@ -102,7 +103,8 @@ fn p2(games: &[Game]) -> u32 {
 }
 
 fn main() -> Result<()> {
-    let games = parse(include_str!("../../input/2.txt"))?;
+    let input = fs::read_to_string("input/2.txt").expect("input file should be there");
+    let games = parse(&input)?;
     let start1 = Instant::now();
     let silver = p1(&games, 12, 13, 14);
     let end1 = Instant::now();

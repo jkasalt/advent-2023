@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{fs, time::Instant};
 
 fn p1(input: &str) -> u32 {
     input
@@ -34,14 +34,14 @@ fn p2(input: &str) -> u32 {
 }
 
 fn main() {
-    let input = include_str!("../../input/1.txt");
+    let input = fs::read_to_string("input/1.txt").expect("input file should be there");
     let start1 = Instant::now();
-    let silver = p1(input);
+    let silver = p1(&input);
     let end1 = Instant::now();
     println!("silver: {silver}");
     println!("took: {:?}", end1.duration_since(start1));
     let start2 = Instant::now();
-    let gold = p2(input);
+    let gold = p2(&input);
     let end2 = Instant::now();
     println!("gold: {gold}");
     println!("took: {:?}", end2.duration_since(start2));
