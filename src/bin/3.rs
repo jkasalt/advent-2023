@@ -115,7 +115,9 @@ fn p2(matrix: &Matrix<Cell>) -> u32 {
 }
 
 fn main() {
-    let input = fs::read_to_string("input/3.txt").expect("input file should be there");
+    let input_path = "input/3.txt";
+    let input =
+        fs::read_to_string(input_path).expect(&format!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let input = parse(&input);
     let end0 = Instant::now();

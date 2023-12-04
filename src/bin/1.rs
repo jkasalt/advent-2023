@@ -34,7 +34,9 @@ fn p2(input: &str) -> u32 {
 }
 
 fn main() {
-    let input = fs::read_to_string("input/1.txt").expect("input file should be there");
+    let input_path = "input/1.txt";
+    let input =
+        fs::read_to_string(input_path).expect(&format!("input file should be at {input_path}"));
     let start1 = Instant::now();
     let silver = p1(&input);
     let end1 = Instant::now();

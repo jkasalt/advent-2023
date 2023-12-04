@@ -9,10 +9,11 @@ struct Card {
 
 impl Card {
     fn points(&self) -> u64 {
-        if self.matching() == 0 {
+        let m = self.matching();
+        if m == 0 {
             0
         } else {
-            2u64.pow(self.matching() as u32 - 1)
+            2u64.pow(m as u32 - 1)
         }
     }
 
