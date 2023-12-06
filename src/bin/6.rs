@@ -1,6 +1,4 @@
-use core::fmt;
 use std::fs;
-use std::ops::Range;
 use std::time::Instant;
 
 struct Race {
@@ -44,7 +42,7 @@ fn p1(races: &[Race]) -> usize {
                 .filter(|n| -n.pow(2) + n * race.lasting - race.record > 0)
                 .count()
         })
-        .fold(1, |acc, x| acc * x)
+        .product()
 }
 
 fn parse2(input: &str) -> Race {
@@ -76,7 +74,9 @@ fn p2(race: &Race) -> usize {
 }
 
 fn main() {
-    let input = fs::read_to_string("input/6.txt").expect("Input fild should be there");
+    let input_path = "input/6.txt";
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let races = parse(&input);
     let end0 = Instant::now();
@@ -115,4 +115,3 @@ Distance:  9  40  200";
         assert_eq!(p2(&race), 71503);
     }
 }
-

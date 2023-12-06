@@ -1,6 +1,6 @@
 use core::fmt;
 use std::fs;
-// use std::ops::Range;
+use std::ops::Range;
 use std::time::Instant;
 
 struct Mapper {
@@ -11,12 +11,12 @@ struct Mapper {
 
 impl Mapper {
     fn contains(&self, num: &u64) -> bool {
-        (self.src..(self.src + self.range)).contains(num)
+        (self.src..self.end()).contains(num)
     }
 
-    // fn end(&self) -> u64 {
-    //     self.src + self.range
-    // }
+    fn end(&self) -> u64 {
+        self.src + self.range
+    }
 
     fn map(&self, num: u64) -> u64 {
         num - self.src + self.dst
@@ -92,75 +92,80 @@ fn p1(seeds: &[u64], mappers: &[Vec<Mapper>]) -> u64 {
 }
 
 fn p2(seeds: &[u64], mappers: &[Vec<Mapper>]) -> u64 {
-    let seeds: Vec<u64> = seeds.chunks(2).flat_map(|c| c[0]..(c[0] + c[1])).collect();
-    p1(&seeds, &mappers)
-    // let seed_ranges: Vec<Range<u64>> = seeds.chunks(2).map(|c| c[0]..(c[0] + c[1])).collect();
+    // let seeds: Vec<u64> = seeds.chunks(2).flat_map(|c| c[0]..(c[0] + c[1])).collect();
+    // p1(&seeds, &mappers)
+    let mut seed_ranges: Vec<Option<Range<u64>>> = seeds
+        .chunks(2)
+        .map(|c| c[0]..(c[0] + c[1]))
+        .map(Some)
+        .collect();
     // println!("seed_ranges: {seed_ranges:?}");
-    // seed_ranges
-    //     .into_iter()
-    //     .flat_map(|seed_range| {
-    //         let mut next_range = vec![Some(seed_range)];
-    //         for section in mappers {
-    //             println!("---");
-    //             let mut mapped: Vec<Range<u64>> = Vec::new();
-    //             for maybe_range in &mut next_range {
-    //                 let mut should_be_none = false;
-    //                 if let Some(range) = maybe_range {
-    //                     for mapper in section {
-    //                         println!("range is {range:?}, mapper is {mapper:?}...");
-    //                         // if the range is fully in
-    //                         if mapper.contains(&range.start) && mapper.contains(&range.end) {
-    //                             println!("found completely contained!");
-    //                             let new_start = mapper.map(range.start);
-    //                             let new_end = mapper.map(range.end);
-    //                             println!("mapped to {new_start}..{new_end}");
-    //                             mapped.push(new_start..new_end);
-    //                             should_be_none = true;
-    //                         } else if mapper.contains(&range.end) {
-    //                             // if the end is in, we have to split this range and map the tail
-    //                             println!("found the end is contained");
-    //                             let tail = range.end;
-    //                             range.end = mapper.src - 1;
-    //
-    //                             let new_start = mapper.map(mapper.src);
-    //                             let new_end = mapper.map(tail);
-    //                             println!(
-    //                                 "split between {}..{}, and {new_start}..{new_end}",
-    //                                 range.start, range.end
-    //                             );
-    //                             mapped.push(new_start..new_end);
-    //                         } else if mapper.contains(&range.start) {
-    //                             // if the start is in, we have to split this range and map the head
-    //                             println!("found the start is contained");
-    //                             let head = range.start;
-    //                             range.start = mapper.end();
-    //                             let new_start = mapper.map(head);
-    //                             let new_end = mapper.map(mapper.end() - 1);
-    //                             println!(
-    //                                 "split between {}..{}, and {new_start}..{new_end}",
-    //                                 range.start, range.end
-    //                             );
-    //                             mapped.push(new_start..new_end);
-    //                         } else {
-    //                             println!("not contained");
-    //                         }
-    //                     }
-    //                 }
-    //                 if should_be_none {
-    //                     *maybe_range = None;
-    //                 }
-    //             }
-    //             next_range.extend(mapped.into_iter().map(|r| Some(r)));
-    //         }
-    //         dbg!(next_range)
-    //     })
-    //     .filter_map(|range| range.map(|r| r.start))
-    //     .min()
-    //     .unwrap()
+    for section in mappers {
+        // println!("---");
+        let mut mapped: Vec<Range<u64>> = Vec::new();
+        for maybe_range in &mut seed_ranges {
+            let mut should_be_none = false;
+            if maybe_range.is_none() {
+                continue;
+            }
+            let range = maybe_range.as_mut().unwrap();
+            for mapper in section {
+                // println!("range is {range:?}, mapper is {mapper:?}...");
+                // if the range is fully in
+                if mapper.contains(&range.start) && mapper.contains(&range.end) {
+                    // println!("found completely contained!");
+                    let new_start = mapper.map(range.start);
+                    let new_end = mapper.map(range.end);
+                    // println!("mapped to {new_start}..{new_end}");
+                    mapped.push(new_start..new_end);
+                    should_be_none = true;
+                } else if mapper.contains(&range.end) {
+                    // if the end is in, we have to split this range and map the tail
+                    // println!("found the end is contained");
+                    let tail = range.end;
+                    range.end = mapper.src;
+
+                    let new_start = mapper.map(mapper.src);
+                    let new_end = mapper.map(tail);
+                    // println!(
+                    //     "split between {}..{}, and {new_start}..{new_end}",
+                    //     range.start, range.end
+                    // );
+                    mapped.push(new_start..new_end);
+                } else if mapper.contains(&range.start) {
+                    // if the start is in, we have to split this range and map the head
+                    // println!("found the start is contained");
+                    let head = range.start;
+                    range.start = mapper.end();
+                    let new_start = mapper.map(head);
+                    let new_end = mapper.map(mapper.end());
+                    // println!(
+                    //     "split between {}..{}, and {new_start}..{new_end}",
+                    //     range.start, range.end
+                    // );
+                    mapped.push(new_start..new_end);
+                } else {
+                    // println!("not contained");
+                }
+            }
+            if should_be_none {
+                *maybe_range = None;
+            }
+        }
+        seed_ranges.extend(mapped.into_iter().map(Some));
+    }
+    // dbg!(seed_ranges)
+    seed_ranges
+        .into_iter()
+        .filter_map(|range_opt| range_opt.map(|r| r.start))
+        .min()
+        .unwrap()
 }
 
 fn main() {
-    let input = fs::read_to_string("input/5.txt").expect("Input fild should be there");
+    let input_path = "input/5.txt";
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let (seeds, mappers) = parse(&input);
     let end0 = Instant::now();
@@ -229,4 +234,3 @@ humidity-to-location map:
         assert_eq!(p2(&seeds, &mappers), 46)
     }
 }
-

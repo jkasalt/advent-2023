@@ -104,8 +104,8 @@ fn p2(games: &[Game]) -> u32 {
 
 fn main() -> Result<()> {
     let input_path = "input/2.txt";
-    let input =
-        fs::read_to_string(input_path).expect(&format!("input file should be at {input_path}"));
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let games = parse(&input)?;
     let start1 = Instant::now();
     let silver = p1(&games, 12, 13, 14);
@@ -149,4 +149,3 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
         Ok(())
     }
 }
-

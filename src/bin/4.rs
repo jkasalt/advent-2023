@@ -62,7 +62,9 @@ fn p2(cards: &[Card]) -> usize {
 }
 
 fn main() {
-    let input = fs::read_to_string("input/4.txt").expect("Input fild should be there");
+    let input_path = "input/4.txt";
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let cards = parse(&input);
     let end0 = Instant::now();
@@ -104,4 +106,3 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
         assert_eq!(p2(&cards), 30);
     }
 }
-

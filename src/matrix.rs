@@ -267,4 +267,3 @@ mod test {
         assert_eq!(matrix[(0, 1)], 0);
     }
 }
-

@@ -55,9 +55,8 @@ fn parse(input: &str) -> Matrix<Cell> {
                     .fold(0, |n, (i, c)| n + *c * 10u32.pow(i as u32));
                 buf.clear();
                 for i in &remember {
-                    match items[*i] {
-                        Cell::Num { ref mut whole, .. } => *whole = num,
-                        _ => {}
+                    if let Cell::Num { ref mut whole, .. } = items[*i] {
+                        *whole = num
                     }
                 }
                 remember.clear();
@@ -116,8 +115,8 @@ fn p2(matrix: &Matrix<Cell>) -> u32 {
 
 fn main() {
     let input_path = "input/3.txt";
-    let input =
-        fs::read_to_string(input_path).expect(&format!("input file should be at {input_path}"));
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let input = parse(&input);
     let end0 = Instant::now();
@@ -162,4 +161,3 @@ mod day3 {
         assert_eq!(p2(&input), 467835);
     }
 }
-
