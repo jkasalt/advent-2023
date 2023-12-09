@@ -56,9 +56,8 @@ fn parse(input: &str) -> Matrix<Cell> {
                     .fold(0, |n, (i, c)| n + *c * 10u64.pow(i as u32));
                 buf.clear();
                 for i in &remember {
-                    match items[*i] {
-                        Cell::Num { ref mut whole, .. } => *whole = num,
-                        _ => {}
+                    if let Cell::Num { ref mut whole, .. } = items[*i] {
+                        *whole = num
                     }
                 }
                 remember.clear();
@@ -113,19 +112,21 @@ fn p2(matrix: &Matrix<Cell>) -> u64 {
 }
 
 fn main() {
-    let input = {
+    let input_path = {
         if env::args()
             .find(|s| matches!(s.as_str(), "--bigboy"))
             .is_some()
         {
-            fs::read_to_string("bigboy/3.txt").unwrap()
+            "bigboy/3.txt"
             // Bigboy
             // silver: 258006204
             // gold: 17158526595
         } else {
-            fs::read_to_string("input/3.txt").unwrap()
+            "input/3.txt"
         }
     };
+    let input = fs::read_to_string(input_path)
+        .unwrap_or_else(|_| panic!("input file should be at {input_path}"));
     let start0 = Instant::now();
     let input = parse(&input);
     let end0 = Instant::now();
