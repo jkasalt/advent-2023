@@ -1,11 +1,12 @@
 use advent2023::matrix::Matrix;
-use std::fmt;
+use std::collections::HashMap;
 use std::time::Instant;
+use std::{env, fmt, fs};
 
 #[derive(PartialEq, Eq)]
 enum Cell {
     Empty,
-    Num { itself: u32, whole: u32, id: usize },
+    Num { itself: u64, whole: u64, id: usize },
     Symbol(char),
 }
 
@@ -32,7 +33,7 @@ fn parse(input: &str) -> Matrix<Cell> {
     let mut remember = Vec::new();
     for c in input.chars().filter(|c| c.is_ascii_graphic()) {
         if c.is_numeric() {
-            let n = c.to_digit(10).unwrap();
+            let n = c.to_digit(10).unwrap() as u64;
             let cell = Cell::Num {
                 itself: n,
                 whole: 0,
@@ -52,7 +53,7 @@ fn parse(input: &str) -> Matrix<Cell> {
                     .iter()
                     .rev()
                     .enumerate()
-                    .fold(0, |n, (i, c)| n + *c * 10u32.pow(i as u32));
+                    .fold(0, |n, (i, c)| n + *c * 10u64.pow(i as u32));
                 buf.clear();
                 for i in &remember {
                     match items[*i] {
@@ -67,8 +68,8 @@ fn parse(input: &str) -> Matrix<Cell> {
     Matrix::new(items, width, height)
 }
 
-fn p1(matrix: &Matrix<Cell>) -> u32 {
-    let mut will_sum = Vec::new();
+fn p1(matrix: &Matrix<Cell>) -> u64 {
+    let mut will_sum = HashMap::new();
     let mut has_symbol = false;
     for ((x, y), cell) in matrix.iter_pos() {
         if let Cell::Num { whole, id, .. } = cell {
@@ -77,23 +78,21 @@ fn p1(matrix: &Matrix<Cell>) -> u32 {
                 .iter()
                 .any(|pos| matches!(matrix[*pos], Cell::Symbol(_)));
             if has_symbol {
-                will_sum.push((id, whole));
+                will_sum.insert(*id, *whole);
             }
         } else {
             has_symbol = false;
         }
     }
-    will_sum.sort_unstable();
-    will_sum.dedup_by_key(|(id, _)| *id);
-    will_sum.into_iter().map(|(_, n)| n).sum()
+    dbg!(will_sum).values().sum()
 }
 
-fn p2(matrix: &Matrix<Cell>) -> u32 {
+fn p2(matrix: &Matrix<Cell>) -> u64 {
     matrix
         .iter_pos()
         .filter(|(_, cell)| **cell == Cell::Symbol('*'))
         .filter_map(|((x, y), _)| {
-            let mut found: Vec<_> = matrix
+            let found: HashMap<_, _> = matrix
                 .neighbor_indices(x, y)
                 .iter()
                 .filter_map(|pos| {
@@ -104,19 +103,31 @@ fn p2(matrix: &Matrix<Cell>) -> u32 {
                     }
                 })
                 .collect();
-            found.sort_unstable();
-            found.dedup_by_key(|(id, _)| *id);
             if found.len() == 2 {
-                return Some(found.iter().fold(1, |x, (_, y)| x * y));
+                Some(found.values().fold(1, |x, y| x * y))
+            } else {
+                None
             }
-            None
         })
         .sum()
 }
 
 fn main() {
+    let input = {
+        if env::args()
+            .find(|s| matches!(s.as_str(), "--bigboy"))
+            .is_some()
+        {
+            fs::read_to_string("bigboy/3.txt").unwrap()
+            // Bigboy
+            // silver: 258006204
+            // gold: 17158526595
+        } else {
+            fs::read_to_string("input/3.txt").unwrap()
+        }
+    };
     let start0 = Instant::now();
-    let input = parse(include_str!("../../input/3.txt"));
+    let input = parse(&input);
     let end0 = Instant::now();
     println!("input parsed in {:?}", end0.duration_since(start0));
 
@@ -137,7 +148,7 @@ fn main() {
 mod day3 {
     use super::*;
 
-    const SAMPLE: &'static str = "467..114..
+    const SAMPLE1: &'static str = "467..114..
 ...*......
 ..35..633.
 ......#...
@@ -149,14 +160,38 @@ mod day3 {
 .664.598..";
 
     #[test]
-    fn sample1() {
-        let input = parse(SAMPLE);
+    fn sample1_p1() {
+        let input = parse(SAMPLE1);
         assert_eq!(p1(&input), 4361);
     }
     #[test]
-    fn sample2() {
-        let input = parse(SAMPLE);
+    fn sample1_p2() {
+        let input = parse(SAMPLE1);
         assert_eq!(p2(&input), 467835);
+    }
+
+    const SAMPLE2: &'static str = "12.......*..
++.........34
+.......-12..
+..78........
+..*....60...
+78.........9
+.5.....23..$
+8...90*12...
+............
+2.2......12.
+.*.........*
+1.1..503+.56";
+
+    #[test]
+    fn sample2_p1() {
+        let input = parse(SAMPLE2);
+        assert_eq!(p1(&input), 925);
+    }
+    #[test]
+    fn sample2_p2() {
+        let input = parse(SAMPLE2);
+        assert_eq!(p2(&input), 6756);
     }
 }
 
