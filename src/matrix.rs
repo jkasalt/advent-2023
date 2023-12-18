@@ -17,6 +17,7 @@ impl<T> Matrix<T> {
         assert_eq!(vec.len(), width * height);
         Self { vec, width, height }
     }
+
     pub fn get(&self, x: isize, y: isize) -> Option<&T> {
         if x < 0
             || x > (self.width - 1).try_into().unwrap()
@@ -180,7 +181,7 @@ impl<T> Matrix<T> {
         self.vec
             .iter()
             .enumerate()
-            .map(|(i, t)| ((i % self.width, i / self.height), t))
+            .map(|(i, t)| ((i % self.width, i / self.width), t))
     }
 }
 
